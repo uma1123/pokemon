@@ -1,103 +1,105 @@
-import Image from "next/image";
+"use client";
+import { useState, useEffect, useCallback } from "react";
+import axios from "axios";
+import Card from "../Components/Card";
 
-export default function Home() {
+interface Pokemon {
+  id: number;
+  name: string;
+  image: string;
+  type: string;
+}
+
+export default function Page() {
+  const [allPokemons, setAllPokemons] = useState<Pokemon[]>([]);
+  const [offset, setOffset] = useState(0);
+  const limit = 20; // 一度に取得するポケモンの数
+
+  // pokemonのデータを取得
+  const getPokemon = useCallback(async () => {
+    try {
+      const response = await axios.get(
+        `https://pokeapi.co/api/v2/pokemon?limit=${limit}}{offset=${offset}`
+      );
+      const data = response.data;
+
+      // ポケモンの詳細情報を取得
+      const pokemonDetails = await Promise.all(
+        data.results.map(async (pokemon: { url: string }) => {
+          const res = await axios.get(pokemon.url);
+          const pokemonData = res.data;
+          const speciesRes = await axios.get(pokemonData.species.url);
+
+          // 日本語の名前を取得
+          const japaneseName =
+            speciesRes.data.names.find(
+              (nameObj: { language: { name: string }; name: string }) =>
+                nameObj.language.name === "ja"
+            )?.name || pokemonData.name;
+
+          // 日本語のタイプを取得
+          const japaneseTypeRes = await Promise.all(
+            pokemonData.types.map(
+              async (typeObj: { type: { url: string } }) => {
+                const typeRes = await axios.get(typeObj.type.url);
+                return typeRes.data.names.find(
+                  (nameObj: { language: { name: string }; name: string }) =>
+                    nameObj.language.name === "ja"
+                )?.name;
+              }
+            )
+          );
+
+          // ポケモンの詳細情報を返す
+          return {
+            id: pokemonData.id,
+            name: japaneseName,
+            image:
+              pokemonData.sprites.other["official-artwork"].front_default ||
+              "画像がありません",
+            type: japaneseTypeRes[0] || "不明",
+          };
+        })
+      );
+
+      // 既存のポケモンと重複しないようにフィルタリングして追加
+      setAllPokemons((prev) => [
+        ...prev,
+        ...pokemonDetails.filter(
+          (pokemon) => !prev.some((p) => p.id === pokemon.id)
+        ),
+      ]);
+    } catch (error) {
+      console.error("エラー:", error);
+      alert("ポケモンのデータを取得できませんでした。");
+    }
+  }, [offset]); // offsetを依存配列に追加
+
+  // 初回レンダリング時にポケモンのデータを取得
+  useEffect(() => {
+    getPokemon();
+  }, [getPokemon]);
+
   return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm/6 text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-[family-name:var(--font-geist-mono)] font-semibold">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
-
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
-        </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
+    <div className="flex flex-col items-center justify-center min-h-screen py-12 px-2">
+      <h1 className="text-2xl mb-4">ポケモン図鑑</h1>
+      <div className="flex flex-wrap items-center justify-center">
+        {allPokemons.map((pokemon) => (
+          <Card
+            key={pokemon.id}
+            id={pokemon.id}
+            image={pokemon.image}
+            name={pokemon.name}
+            type={pokemon.type}
           />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
+        ))}
+      </div>
+      <button
+        className="mt-4 p-2 bg-blue-500 text-white rounded"
+        onClick={() => setOffset((prev) => prev + limit)}
+      >
+        次のポケモンを表示
+      </button>
     </div>
   );
 }
