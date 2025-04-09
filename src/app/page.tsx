@@ -1,7 +1,8 @@
 "use client";
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import axios from "axios";
 import Card from "../Components/Card";
+import Header from "../Components/Header";
 
 interface Pokemon {
   id: number;
@@ -13,13 +14,20 @@ interface Pokemon {
 export default function Page() {
   const [allPokemons, setAllPokemons] = useState<Pokemon[]>([]);
   const [offset, setOffset] = useState(0);
-  const limit = 20; // 一度に取得するポケモンの数
+  const [loading, setLoading] = useState(false);
+  const limit = 24; // 一度に取得するポケモンの数
+
+  // IntersectionObserverの参照を作成
+  // useRefを使用して、コンポーネントのライフサイクルに依存しない参照を作成
+  // これにより、コンポーネントが再レンダリングされても同じ参照を使用できる
+  const observerRef = useRef<IntersectionObserver | null>(null);
 
   // pokemonのデータを取得
   const getPokemon = useCallback(async () => {
+    setLoading(true);
     try {
       const response = await axios.get(
-        `https://pokeapi.co/api/v2/pokemon?limit=${limit}}{offset=${offset}`
+        `https://pokeapi.co/api/v2/pokemon?limit=${limit}&offset=${offset}`
       );
       const data = response.data;
 
@@ -73,6 +81,7 @@ export default function Page() {
       console.error("エラー:", error);
       alert("ポケモンのデータを取得できませんでした。");
     }
+    setLoading(false);
   }, [offset]); // offsetを依存配列に追加
 
   // 初回レンダリング時にポケモンのデータを取得
@@ -80,9 +89,27 @@ export default function Page() {
     getPokemon();
   }, [getPokemon]);
 
+  // スクロール位置が変わったときにポケモンのデータを取得
+  const observeElement = useCallback(
+    (node: HTMLDivElement) => {
+      if (loading) return; // ローディング中は処理をスキップ
+      if (observerRef.current) observerRef.current.disconnect(); // 以前のobserverを解除
+      observerRef.current = new IntersectionObserver((entries) => {
+        if (entries[0].isIntersecting) {
+          // 監視している要素が画面に入ったとき
+          setOffset((prev) => prev + limit); // 次のポケモンを取得
+        }
+      });
+      if (node) observerRef.current.observe(node); // 新しい要素を監視
+    },
+    [loading]
+  );
+  /*<div ref={observeElement}>が画面内に入ると、setOffset()がよばれてoffsetが増加
+  ⇒getPokemon()が再実行されて追加のポケモンを取得 */
+
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen py-12 px-2">
-      <h1 className="text-2xl mb-4">ポケモン図鑑</h1>
+    <div className="flex flex-col items-center justify-center min-h-screen">
+      <Header />
       <div className="flex flex-wrap items-center justify-center">
         {allPokemons.map((pokemon) => (
           <Card
@@ -94,12 +121,9 @@ export default function Page() {
           />
         ))}
       </div>
-      <button
-        className="mt-4 p-2 bg-blue-500 text-white rounded"
-        onClick={() => setOffset((prev) => prev + limit)}
-      >
-        次のポケモンを表示
-      </button>
+
+      {loading && <p className="text-center">読み込み中...</p>}
+      <div ref={observeElement} className="w-full h-10" />
     </div>
   );
 }
