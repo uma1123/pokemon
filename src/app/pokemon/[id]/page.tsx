@@ -1,9 +1,11 @@
 "use client";
 import { useEffect, useState } from "react";
 import Image from "next/image";
-import Link from "next/link";
 import { useParams } from "next/navigation";
 import axios from "axios";
+import { getBackgroundColor, getTypeColor } from "@/lib/utils";
+import Status from "./Status";
+import { Badge } from "@/components/ui/badge";
 
 interface PokemonDetails {
   id: number;
@@ -13,6 +15,11 @@ interface PokemonDetails {
   height: number;
   weight: number;
   move: string;
+  className?: string;
+  status: {
+    name: string;
+    base_stat: number;
+  }[];
 }
 
 export default function PokemonDetailPage() {
@@ -46,6 +53,24 @@ export default function PokemonDetailPage() {
           })
         );
 
+        // 日本語のわざを取得
+        const moveUrl = data.moves[0]?.move.url;
+        let japaneseMove = "不明";
+        if (moveUrl) {
+          const moveRes = await axios.get(moveUrl);
+          japaneseMove =
+            moveRes.data.names.find(
+              (nameObj: { language: { name: string }; name: string }) =>
+                nameObj.language.name === "ja"
+            )?.name || "不明";
+        }
+        // ステータスを取得
+        const stats = data.stats.map(
+          (stat: { base_stat: number; stat: { name: string } }) => ({
+            name: stat.stat.name,
+            base_stat: stat.base_stat,
+          })
+        );
         // ポケモンの詳細情報を設定
         setPokemon({
           id: data.id,
@@ -56,7 +81,8 @@ export default function PokemonDetailPage() {
           type: japaneseTypeRes[0] || "不明",
           height: data.height,
           weight: data.weight,
-          move: data.moves[0]?.move.name || "不明",
+          move: japaneseMove,
+          status: stats,
         });
       } catch (error) {
         console.error("エラー", error);
@@ -69,24 +95,52 @@ export default function PokemonDetailPage() {
     return <div className="text-center text-2xl">読み込み中...</div>;
 
   return (
-    <div className="flex flex-col items-center p-8 rounded-lg shadow-lg w-96 mx-auto">
-      <Image
-        src={pokemon.image}
-        alt={pokemon.name}
-        width={192}
-        height={192}
-        className="rounded-full shadow-xl mb-6 border-2 border-black"
-      />
-      <div className="text-lg text-black">
-        <p className="mb-2">タイプ: {pokemon.type}</p>
-        <p className="mb-2">高さ: {pokemon.height / 10} m</p>
-        <p className="mb-2">重さ: {pokemon.weight / 10} kg</p>
-        <p className="mb-4">最初のわざ: {pokemon.move}</p>
-        <Link href="/">
-          <span className="bg-blue-500 text-white py-2 px-4 rounded-lg hover:bg-blue-600 cursor-pointer">
-            戻る
-          </span>
-        </Link>
+    <div className="container mx-auto py-8 px-4">
+      <div
+        className={`${getBackgroundColor(
+          pokemon.type
+        )} rounded-lg p-6 mb-8 shadow-lg`}
+      >
+        <div className="flex flex-col md:flex-row items-center gap-6">
+          <div className="relative w-full max-w-[300px] aspect-square bg-yellow-50 rounded-full p-4 flex items-center justify-center">
+            <Image
+              src={pokemon.image || "/placeholder.svg"}
+              alt={pokemon.name}
+              width={300}
+              height={300}
+              className="object-contain"
+              priority
+            />
+          </div>
+
+          <div className="flex-1">
+            <div className="flex items-baseline gap-3 mb-4">
+              <h1 className="text-3xl md:text-4xl font-bold">{pokemon.name}</h1>
+              <span className="text-xl text-gray-500">
+                #{pokemon.id.toString().padStart(3, "0")}
+              </span>
+            </div>
+
+            <Badge
+              className={`${getTypeColor(
+                pokemon.type
+              )} flex flex-wrap gap-2 mb-4 rounded-full px-3 py-1 text-white text-sm`}
+            >
+              {pokemon.type}
+            </Badge>
+          </div>
+
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 mb-4">
+            <div className="bg-white rounded-lg p-3 shadow">
+              <p className="text-sm text-gray-500">高さ</p>
+              <p className="font-medium">{pokemon.height / 10}m</p>
+            </div>
+            <div className="bg-white rounded-lg p-3 shadow">
+              <p className="text-sm text-gray-500">重さ</p>
+              <p className="font-medium">{pokemon.weight / 10} kg</p>
+            </div>
+          </div>
+        </div>
       </div>
     </div>
   );
