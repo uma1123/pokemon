@@ -120,3 +120,141 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* ↓ここから追加（global.cssの一番下に貼り付け） */
+.bg-pokemon-rock {
+  background-color: rgb(148, 81, 81) !important;
+}
+
+.bg-pokemon-ghost {
+  background-color: rgb(247, 247, 247) !important;
+}
+
+.bg-pokemon-electric {
+  background-color: rgb(255, 255, 161) !important;
+}
+
+.bg-pokemon-bug {
+  background-color: #f6d6a7 !important;
+}
+
+.bg-pokemon-poison {
+  background-color: #e0a7f6 !important;
+}
+
+.bg-pokemon-normal {
+  background-color: #f4f4f4 !important;
+}
+
+.bg-pokemon-fairy {
+  background-color: rgba(255, 192, 203, 0.863) !important;
+}
+
+.bg-pokemon-fire {
+  background-color: #fbe3df !important;
+}
+
+.bg-pokemon-grass {
+  background-color: #e2f9e1 !important;
+}
+
+.bg-pokemon-water {
+  background-color: #e0f1fd !important;
+}
+
+.bg-pokemon-dark {
+  background-color: #9e9169 !important;
+}
+
+.bg-pokemon-psychic {
+  background-color: #fc5fd0 !important;
+}
+
+.bg-pokemon-ground {
+  background-color: #bc7b3d !important;
+}
+
+.bg-pokemon-steel {
+  background-color: #6c676e !important;
+}
+
+.bg-pokemon-fighting {
+  background-color: #de911f !important;
+}
+
+.bg-pokemon-ice {
+  background-color: #92c3f4 !important;
+}
+
+.bg-pokemon-dragon {
+  background-color: #e08b2b !important;
+}
+
+/* ↓ここから追加：濃いめの色指定 */
+.type-pokemon-rock {
+  background-color: #705848 !important;
+}
+
+.type-pokemon-ghost {
+  background-color: #705898 !important;
+}
+
+.type-pokemon-electric {
+  background-color: #f8d030 !important;
+}
+
+.type-pokemon-bug {
+  background-color: #a8b820 !important;
+}
+
+.type-pokemon-poison {
+  background-color: #a040a0 !important;
+}
+
+.type-pokemon-normal {
+  background-color: #a8a878 !important;
+}
+
+.type-pokemon-fairy {
+  background-color: #ee99ac !important;
+}
+
+.type-pokemon-fire {
+  background-color: #f08030 !important;
+}
+
+.type-pokemon-grass {
+  background-color: #78c850 !important;
+}
+
+.type-pokemon-water {
+  background-color: #6890f0 !important;
+}
+
+.type-pokemon-dark {
+  background-color: #705848 !important;
+}
+
+.type-pokemon-psychic {
+  background-color: #f85888 !important;
+}
+
+.type-pokemon-ground {
+  background-color: #e0c068 !important;
+}
+
+.type-pokemon-steel {
+  background-color: #b8b8d0 !important;
+}
+
+.type-pokemon-fighting {
+  background-color: #c03028 !important;
+}
+
+.type-pokemon-ice {
+  background-color: #98d8d8 !important;
+}
+
+.type-pokemon-dragon {
+  background-color: #7038f8 !important;
+}
