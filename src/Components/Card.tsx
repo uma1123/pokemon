@@ -12,6 +12,7 @@ interface CardProps {
   className?: string;
 }
 
+//カードコンポーネント
 export default function Card({ id, name, image, type, className }: CardProps) {
   console.log(className);
   return (
