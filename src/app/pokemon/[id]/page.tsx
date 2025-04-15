@@ -7,6 +7,7 @@ import { getBackgroundColor, getTypeColor } from "@/lib/utils";
 import Status from "./Status";
 import { Badge } from "@/components/ui/badge";
 
+//ポケモンの詳細情報の型定義
 interface PokemonDetails {
   id: number;
   name: string;
