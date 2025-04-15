@@ -142,6 +142,7 @@ export default function PokemonDetailPage() {
           </div>
         </div>
       </div>
+      <Status status={pokemon.status} />
     </div>
   );
 }
