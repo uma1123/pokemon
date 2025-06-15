@@ -4,6 +4,7 @@ import axios from "axios";
 import Card from "../Components/Card";
 import Header from "../Components/Header";
 
+//ポケモン情報の型定義
 interface Pokemon {
   id: number;
   name: string;
@@ -11,15 +12,14 @@ interface Pokemon {
   type: string;
 }
 
+//トップページ
 export default function Page() {
   const [allPokemons, setAllPokemons] = useState<Pokemon[]>([]);
   const [offset, setOffset] = useState(0);
   const [loading, setLoading] = useState(false);
   const limit = 24; // 一度に取得するポケモンの数
 
-  // IntersectionObserverの参照を作成
-  // useRefを使用して、コンポーネントのライフサイクルに依存しない参照を作成
-  // これにより、コンポーネントが再レンダリングされても同じ参照を使用できる
+  // IntersectionObserverの参照
   const observerRef = useRef<IntersectionObserver | null>(null);
 
   // pokemonのデータを取得
