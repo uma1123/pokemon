@@ -4,7 +4,7 @@ import Image from "next/image";
 import { useParams } from "next/navigation";
 import axios from "axios";
 import { getBackgroundColor, getTypeColor } from "@/lib/utils";
-import Status from "./Status";
+import Status from "../../../Components/Status";
 import { Badge } from "@/components/ui/badge";
 
 //ポケモンの詳細情報の型定義
@@ -23,6 +23,7 @@ interface PokemonDetails {
   }[];
 }
 
+//ポケモンの詳細ページ
 export default function PokemonDetailPage() {
   const params = useParams();
   const id = params?.id as string;
@@ -92,17 +93,20 @@ export default function PokemonDetailPage() {
     fetchData();
   }, [id]);
 
+  //ローディング
   if (!pokemon)
     return <div className="text-center text-2xl">読み込み中...</div>;
 
   return (
     <div className="container mx-auto py-8 px-4">
+      {/*タイプごとの背景色*/}
       <div
         className={`${getBackgroundColor(
           pokemon.type
         )} rounded-lg p-6 mb-8 shadow-lg`}
       >
         <div className="flex flex-col md:flex-row items-center gap-6">
+          {/*ポケモン画像*/}
           <div className="relative w-full max-w-[300px] aspect-square bg-yellow-50 rounded-full p-4 flex items-center justify-center">
             <Image
               src={pokemon.image || "/placeholder.svg"}
@@ -114,6 +118,7 @@ export default function PokemonDetailPage() {
             />
           </div>
 
+          {/*名前、ID、タイプ */}
           <div className="flex-1">
             <div className="flex items-baseline gap-3 mb-4">
               <h1 className="text-3xl md:text-4xl font-bold">{pokemon.name}</h1>
@@ -121,7 +126,6 @@ export default function PokemonDetailPage() {
                 #{pokemon.id.toString().padStart(3, "0")}
               </span>
             </div>
-
             <Badge
               className={`${getTypeColor(
                 pokemon.type
@@ -131,6 +135,7 @@ export default function PokemonDetailPage() {
             </Badge>
           </div>
 
+          {/*高さ、重さ */}
           <div className="grid grid-cols-2 sm:grid-cols-3 gap-4 mb-4">
             <div className="bg-white rounded-lg p-3 shadow">
               <p className="text-sm text-gray-500">高さ</p>
